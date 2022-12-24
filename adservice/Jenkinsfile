@@ -14,7 +14,6 @@ pipeline {
         stage('Git-Checkout') {
             steps {
                 echo "${params.Branch_Name}"
-                echo 'Hello World'
                 echo "\033[32m\033[1m===============Clonning Repository===============\n\033[0m"
            git branch: "${params.Branch_Name}", url: 'https://github.com/adeshgowda24/app.git'
                 sh 'cd /var/lib/jenkins/workspace/app-releases/ad-service/src/adservice'
@@ -25,8 +24,20 @@ pipeline {
         }
     
         stage('static-code-analysis') {
+            environment {
+                SCANNER_HOME = tool 'sonar-cloud'
+            }
             steps {
                 echo 'scanning code =================='
+                script {
+                    withSonarQubeEnv(credentialsId: 'sonar-cloud', installationName: 'sonar-cloud') {
+                      sh """
+                         ${SCANNER_HOME}/bin/sonar-scanner -Dsonar.organization=adeshgowda24 \
+                            -Dsonar.projectKey=app \
+                            -Dsonar.sources=/var/lib/jenkins/workspace/app-releases/ad-service/src/adservice
+                         """
+                    }
+                }
                 echo '===============scanned============'
             }
         }
