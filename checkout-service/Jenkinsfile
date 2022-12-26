@@ -13,8 +13,8 @@ pipeline {
         BOLD = "\033[1m"
         NORMAL = "\033[0m"
         BLUE= "\033[34m"
-        GREEN="\032[34m"
-        RED="\031[34m"
+        GREEN= "\032[34m"
+        RED= "\031[34m"
     }
 
     stages {
