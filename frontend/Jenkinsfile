@@ -1,1 +1,93 @@
+pipeline {
+    agent any
+    parameters {
+        
+          string defaultValue: 'main', description: 'Please Enter the Branch To Build ', name: 'Branch_Name', trim: true
+          string defaultValue: 'v2', description: 'version to Build', name: 'Version_Name', trim: true
+    }
+   
+    options {
+        ansiColor('xterm')
+    }
+    environment {
+        BOLD = "\033[1m"
+        NORMAL = "\033[0m"
+        BLUE= "\033[34m"
+        GREEN= "\032[34m"
+        RED= "\031[34m"
+    }
+
+    stages {
+        stage('Git-Checkout') {
+            steps {
+                echo "${BOLD}${BLUE}===============Clonning Repository===============${NORMAL}"
+                echo "${BOLD}====================Checking out Branch :${BLUE}${params.Branch_Name}${NORMAL} ${BOLD}=========================${NORMAL}"
+                git branch: "${params.Branch_Name}", url: 'https://github.com/adeshgowda24/app.git'
+                sh 'ls -lrt'
+            }
+    
+        }
+    
+        stage('static-code-analysis') {
+            environment {
+                SCANNER_HOME = tool 'sonar-cloud'
+            }
+            steps {
+                echo "${BOLD}============================STARTING STATIC-CODE-ANALYSIS==================${NORMAL}"
+                script {
+                    withSonarQubeEnv(credentialsId: 'sonar-cloud', installationName: 'sonar-cloud') {
+                      sh """
+                      
+                         ${SCANNER_HOME}/bin/sonar-scanner  -X -Dsonar.organization=adeshgowda24 \
+                            -Dsonar.projectKey=adeshgowda24_app \
+                            -Dsonar.sources=/var/lib/jenkins/workspace/app-releases/ad-service/src/frontend/
+                         """
+                    }
+                }
+                echo "${BOLD}===============SUCCESSFULLY COMPLETED STATIC CODE-ANALYSIS============${NORMAL}"
+            }
+        }
+        
+        stage('Quality-Gate-check') {
+            steps {
+                echo '======================checking quality =================='
+                echo '===============scanned============'
+            }
+        }
+         stage('build-docker-image') {
+            steps {
+                echo "${BOLD}===============Building-Docker-Image===============${NORMAL}"
+                sh 'docker build -t adeshgowda/frontend:${BUILD_NUMBER} /var/lib/jenkins/workspace/app-releases/cart-service/src/frontend/'
+
+              echo "${BOLD}===============IMAGE ${BLUE}frontend:${BUILD_NUMBER}${NORMAL}${BOLD} BUILT SUCCESSFULLY===============${NORMAL}"
+            }
+        }
+         stage('Tag-Docker-Image') {
+            steps {
+                echo "${BOLD}===============LIST-OF-DOCKER-IMAGES===============${NORMAL}"
+                 sh 'docker images'
+              echo "${BOLD} ================${BLUE}Logging-in-to-Amazon-Container-Registry${NORMAL}${BOLD}=========================${NORMAL}"
+              echo "${BOLD}=====================================REPO=${BLUE}frontend${NORMAL}${BOLD}=======================================${NORMAL}"
+              
+                 sh  'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 410012130044.dkr.ecr.us-east-1.amazonaws.com'
+                
+                 echo "${BOLD}===============TAGGING-DOCKER-IMAGE:${BLUE}frontend:${BUILD_NUMBER}${BOLD}${NORMAL}===============${NORMAL}"
+              
+                 echo "${BOLD}=========================Version-name=${BLUE}frontend:${params.Version_Name}${NORMAL}${BOLD}===================================${NORMAL}"
+                 sh "docker tag adeshgowda/frontend:${BUILD_NUMBER} 410012130044.dkr.ecr.us-east-1.amazonaws.com/frontend:${params.Version_Name}"
+                
+            }
+        }
+        stage('Push-Image-To-Ecr') {
+            steps {
+                echo "${BOLD}===============Pushing Docker Image ${BLUE}frontend:${params.Version_Name}${NORMAL} ${BOLD}===============${NORMAL}"
+                sh "docker push 410012130044.dkr.ecr.us-east-1.amazonaws.com/frontend:${params.Version_Name}"
+                echo "${BOLD}===============IMAGE frontend:${params.Version_Name} PUSHED SUCCESSFULLY!!!===============${NORMAL}"
+            }
+        }
+    }
+    
+    
+}
+
 
