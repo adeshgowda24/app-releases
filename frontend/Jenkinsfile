@@ -40,7 +40,7 @@ pipeline {
                       
                          ${SCANNER_HOME}/bin/sonar-scanner  -X -Dsonar.organization=adeshgowda24 \
                             -Dsonar.projectKey=adeshgowda24_app \
-                            -Dsonar.sources=/var/lib/jenkins/workspace/app-releases/ad-service/src/frontend/
+                            -Dsonar.sources=/var/lib/jenkins/workspace/app-releases/frontend/src/frontend/
                          """
                     }
                 }
