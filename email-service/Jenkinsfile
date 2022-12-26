@@ -82,7 +82,7 @@ pipeline {
             steps {
                 echo "${BOLD}===============Pushing Docker Image ${BLUE}email-service:${params.Version_Name}${NORMAL} ${BOLD}===============${NORMAL}"
                 sh "docker push 410012130044.dkr.ecr.us-east-1.amazonaws.com/email-service:${params.Version_Name}"
-                echo "${BOLD}===============IMAGE email-service:${params.Version_Name} PUSHED SUCCESSFULLY!!!===============${NORMAL}"
+                echo "${BOLD}===============IMAGE ${BLUE}email-service:${params.Version_Name}${NORMAL}${BOLD}PUSHED SUCCESSFULLY!!!===============${NORMAL}"
             }
         }
     }
