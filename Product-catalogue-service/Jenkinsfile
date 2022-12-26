@@ -74,7 +74,7 @@ pipeline {
                  echo "${BOLD}===============TAGGING-DOCKER-IMAGE:${BLUE}product-catalogue-service:${BUILD_NUMBER}${BOLD}${NORMAL}===============${NORMAL}"
               
                  echo "${BOLD}=========================Version-name=${BLUE}product-catalogue-service:${params.Version_Name}${NORMAL}${BOLD}===================================${NORMAL}"
-                 sh "docker tag adeshgowda/product-catalogue-service:${BUILD_NUMBER} 410012130044.dkr.ecr.us-east-1.amazonaws.com/frontend:${params.Version_Name}"
+                 sh "docker tag adeshgowda/product-catalogue-service:${BUILD_NUMBER} 410012130044.dkr.ecr.us-east-1.amazonaws.com/product-catalogue-service:${params.Version_Name}"
                 
             }
         }
