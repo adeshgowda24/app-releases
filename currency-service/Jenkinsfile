@@ -40,7 +40,7 @@ pipeline {
                       
                          ${SCANNER_HOME}/bin/sonar-scanner  -X -Dsonar.organization=adeshgowda24 \
                             -Dsonar.projectKey=adeshgowda24_app \
-                            -Dsonar.sources=/var/lib/jenkins/workspace/app-releases/ad-service/src/checkoutservice
+                            -Dsonar.sources=/var/lib/jenkins/workspace/app-releases/ad-service/src/currencyservice
                          """
                     }
                 }
@@ -57,7 +57,7 @@ pipeline {
          stage('build-docker-image') {
             steps {
                 echo "${BOLD}===============Building-Docker-Image===============${NORMAL}"
-                sh 'docker build -t adeshgowda/checkoutservice:${BUILD_NUMBER} /var/lib/jenkins/workspace/app-releases/cart-service/src/checkoutservice/'
+                sh 'docker build -t adeshgowda/currency-service:${BUILD_NUMBER} /var/lib/jenkins/workspace/app-releases/cart-service/src/currencyservice/'
 
                 echo "${BOLD}===============${BLUE}IMAGE BUILT SUCCESSFULLY${NORMAL}${BOLD}===============${NORMAL}"
             }
@@ -67,22 +67,22 @@ pipeline {
                 echo "${BOLD}===============LIST-OF-DOCKER-IMAGES===============${NORMAL}"
                  sh 'docker images'
               echo "${BOLD} ================${BLUE}Logging-in-to-Amazon-Container-Registry${NORMAL}${BOLD}=========================${NORMAL}"
-              echo "${BOLD}=====================================REPO=${BLUE}checkout-service${NORMAL}${BOLD}=======================================${NORMAL}"
+              echo "${BOLD}=====================================REPO=${BLUE}currency-service${NORMAL}${BOLD}=======================================${NORMAL}"
               
                 sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 410012130044.dkr.ecr.us-east-1.amazonaws.com'
                 
-                echo "${BOLD}===============TAGGING-DOCKER-IMAGE:${BLUE}checkoutservice:${BUILD_NUMBER}${BOLD}${NORMAL}===============${NORMAL}"
+                echo "${BOLD}===============TAGGING-DOCKER-IMAGE:${BLUE}currency-service:${BUILD_NUMBER}${BOLD}${NORMAL}===============${NORMAL}"
               
-                echo "${BOLD}=========================Version-name=${BLUE}checkout-service:${params.Version_Name}${NORMAL}${BOLD}===================================${NORMAL}"
-                sh "docker tag adeshgowda/checkoutservice:${BUILD_NUMBER} 410012130044.dkr.ecr.us-east-1.amazonaws.com/checkout-service:${params.Version_Name}"
+                echo "${BOLD}=========================Version-name=${BLUE}currency-service:${params.Version_Name}${NORMAL}${BOLD}===================================${NORMAL}"
+                sh "docker tag adeshgowda/currency-service:${BUILD_NUMBER} 410012130044.dkr.ecr.us-east-1.amazonaws.com/currency-service:${params.Version_Name}"
                 
             }
         }
         stage('Push-Image-To-Ecr') {
             steps {
-                echo "${BOLD}===============Pushing Docker Image ${BLUE}checkout-service:${params.Version_Name}${NORMAL} ${BOLD}===============${NORMAL}"
-                sh "docker push 410012130044.dkr.ecr.us-east-1.amazonaws.com/checkout-service:${params.Version_Name}"
-                echo "${BOLD}===============IMAGE PUSHED SUCCESSFULLY!!!===============${NORMAL}"
+                echo "${BOLD}===============Pushing Docker Image ${BLUE}currency-service:${params.Version_Name}${NORMAL} ${BOLD}===============${NORMAL}"
+                sh "docker push 410012130044.dkr.ecr.us-east-1.amazonaws.com/currency-service:${params.Version_Name}"
+                echo "${BOLD}===============IMAGE currency-service:${params.Version_Name} PUSHED SUCCESSFULLY!!!===============${NORMAL}"
             }
         }
     }
