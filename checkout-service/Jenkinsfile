@@ -9,12 +9,19 @@ pipeline {
     options {
         ansiColor('xterm')
     }
+    environment {
+        BOLD = "\033[1m"
+        NORMAL = "\033[0m"
+        BLUE= "\033[34m"
+        GREEN="\032[34m"
+        RED="\031[34m"
+    }
 
     stages {
         stage('Git-Checkout') {
             steps {
-                echo "\033[31m\033[1m====================Checking out Branch :${params.Branch_Name}=========================\n\033[0m"
-                echo "\033[32m\033[1m===============Clonning Repository===============\n\033[0m"
+                echo "${BOLD}====================Checking out Branch :${RED} ${params.Branch_Name} ${NORMAL} ${BOLD}=========================${NORMAL}"
+                echo "${BOLD}${BLUE}===============Clonning Repository===============${NORMAL}"
            git branch: "${params.Branch_Name}", url: 'https://github.com/adeshgowda24/app.git'
                 sh 'ls -lrt'
                 echo "$PWD"
@@ -27,7 +34,7 @@ pipeline {
                 SCANNER_HOME = tool 'sonar-cloud'
             }
             steps {
-                echo '============================scanning code =================='
+                echo "${BOLD}============================STARTING STATIC-CODE-ANALYSIS==================${NORMAL}"
                 script {
                     withSonarQubeEnv(credentialsId: 'sonar-cloud', installationName: 'sonar-cloud') {
                       sh """
@@ -38,7 +45,7 @@ pipeline {
                          """
                     }
                 }
-                echo '===============scanned============'
+                echo "${BOLD}${GREEN}===============SUCCESSFULLY COMPLETED STATIC CODE-ANALYSIS============${NORMAL}"
             }
         }
         
@@ -50,37 +57,36 @@ pipeline {
         }
          stage('build-docker-image') {
             steps {
-                echo "\033[31m\033[1m===============Building-Docker-Image===============\n\033[0m"
+                echo "${BOLD}===============Building-Docker-Image===============${NORMAL}"
                 sh 'docker build -t adeshgowda/checkoutservice:${BUILD_NUMBER} /var/lib/jenkins/workspace/app-releases/cart-service/src/checkoutservice/'
 
-                echo '===============scanned==============='
+                echo "${BOLD}===============${GREEN}IMAGE BUILT SUCCESSFULLY${NORMAL}${BOLD}===============${NORMAL}"
             }
         }
          stage('Tag-Docker-Image') {
             steps {
-                echo "\033[31m\033[1m===============LIST-OF-DOCKER-IMAGES===============\n\033[0m"
+                echo "${BOLD}===============LIST-OF-DOCKER-IMAGES===============${NORMAL}"
                  sh 'docker images'
-              echo "\033[31m\033[ ================Logging-in-to-Amazon-Container-Registry=========================\n\033[0m"
-              echo "\033[31m\033[1m=====================================REPO=checkout-service=======================================\n\033[0m"
+              echo "${BOLD} ================${GREEN}Logging-in-to-Amazon-Container-Registry${NORMAL}${BOLD}=========================${NORMAL}"
+              echo "${BOLD}=====================================REPO=${BLUE}checkout-service${NORMAL}${BOLD}=======================================${NORMAL}"
               
                 sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 410012130044.dkr.ecr.us-east-1.amazonaws.com'
                 
-                echo "\033[31m\033[1m===============Tagging-Docker-Image===============\n\033[0m"
+                echo "${BOLD}===============TAGGING-DOCKER-IMAGE:${BLUE}checkoutservice:${BUILD_NUMBER}${BOLD}${NORMAL}===============${NORMAL}"
               
-                echo "\033[31m\033[1m=========================Version-name=checkout-service:${params.Version_Name}===================================\n\033[0m"
+                echo "${BOLD}=========================Version-name=${BLUE}checkout-service:${params.Version_Name}${NORMAL}${BOLD}===================================${NORMAL}"
                 sh "docker tag adeshgowda/checkoutservice:${BUILD_NUMBER} 410012130044.dkr.ecr.us-east-1.amazonaws.com/checkout-service:${params.Version_Name}"
                 
             }
         }
         stage('Push-Image-To-Ecr') {
             steps {
-                echo "\033[35m\033[1m===============Pushing Docker Image checkout-service:${params.Version_Name}===============\n\033[0m"
+                echo "${GREEN}${BOLD}===============Pushing Docker Image ${RED} checkout-service:${params.Version_Name}${NORMAL} ${BOLD}===============${NORMAL}"
                 sh "docker push 410012130044.dkr.ecr.us-east-1.amazonaws.com/checkout-service:${params.Version_Name}"
-                echo '===============scanned==============='
+                echo "${BOLD}===============IMAGE SCANNED SUCCESSFULLY!!!===============${NORMAL}"
             }
         }
     }
     
     
 }
-
