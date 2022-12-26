@@ -50,8 +50,10 @@ pipeline {
         
         stage('Quality-Gate-check') {
             steps {
-                echo '======================checking quality =================='
-                echo '===============scanned============'
+                      echo '====================== STARTING QUALITY-GATE-CHECK=================='
+                      timeout(time: 10, unit: 'MINUTES') {
+                      waitForQualityGate abortPipeline: true
+             
             }
         }
          stage('build-docker-image') {
