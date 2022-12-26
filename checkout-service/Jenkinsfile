@@ -20,7 +20,7 @@ pipeline {
     stages {
         stage('Git-Checkout') {
             steps {
-                echo "${BOLD}====================Checking out Branch :${RED} ${params.Branch_Name} ${NORMAL} ${BOLD}=========================${NORMAL}"
+                echo "${BOLD}====================Checking out Branch :${RED}${params.Branch_Name}${NORMAL} ${BOLD}=========================${NORMAL}"
                 echo "${BOLD}${BLUE}===============Clonning Repository===============${NORMAL}"
            git branch: "${params.Branch_Name}", url: 'https://github.com/adeshgowda24/app.git'
                 sh 'ls -lrt'
@@ -83,7 +83,7 @@ pipeline {
             steps {
                 echo "${GREEN}${BOLD}===============Pushing Docker Image ${RED} checkout-service:${params.Version_Name}${NORMAL} ${BOLD}===============${NORMAL}"
                 sh "docker push 410012130044.dkr.ecr.us-east-1.amazonaws.com/checkout-service:${params.Version_Name}"
-                echo "${BOLD}===============IMAGE SCANNED SUCCESSFULLY!!!===============${NORMAL}"
+                echo "${BOLD}===============IMAGE PUSHED SUCCESSFULLY!!!===============${NORMAL}"
             }
         }
     }
