@@ -1,1 +1,86 @@
+pipeline {
+    agent any
+    parameters {
+        
+          string defaultValue: 'main', description: 'Please Enter the Branch To Build ', name: 'Branch_Name', trim: true
+          string defaultValue: 'v2', description: 'version to Build', name: 'Version_Name', trim: true
+    }
+   
+    options {
+        ansiColor('xterm')
+    }
+
+    stages {
+        stage('Git-Checkout') {
+            steps {
+                echo "\033[31m\033[1m====================Checking out Branch :${params.Branch_Name}=========================\n\033[0m"
+                echo "\033[32m\033[1m===============Clonning Repository===============\n\033[0m"
+           git branch: "${params.Branch_Name}", url: 'https://github.com/adeshgowda24/app.git'
+                sh 'ls -lrt'
+                echo "$PWD"
+            }
+    
+        }
+    
+        stage('static-code-analysis') {
+            environment {
+                SCANNER_HOME = tool 'sonar-cloud'
+            }
+            steps {
+                echo '============================scanning code =================='
+                script {
+                    withSonarQubeEnv(credentialsId: 'sonar-cloud', installationName: 'sonar-cloud') {
+                      sh """
+                      
+                         ${SCANNER_HOME}/bin/sonar-scanner  -X -Dsonar.organization=adeshgowda24 \
+                            -Dsonar.projectKey=adeshgowda24_app \
+                            -Dsonar.sources=/var/lib/jenkins/workspace/app-releases/ad-service/src/checkoutservice
+                         """
+                    }
+                }
+                echo '===============scanned============'
+            }
+        }
+        
+        stage('Quality-Gate-check') {
+            steps {
+                echo '======================checking quality =================='
+                echo '===============scanned============'
+            }
+        }
+         stage('build-docker-image') {
+            steps {
+                echo "\033[31m\033[1m===============Building-Docker-Image===============\n\033[0m"
+                sh 'docker build -t adeshgowda/checkoutservice:${BUILD_NUMBER} /var/lib/jenkins/workspace/app-releases/cart-service/src/checkoutservice/'
+
+                echo '===============scanned==============='
+            }
+        }
+         stage('Tag-Docker-Image') {
+            steps {
+                echo "\033[31m\033[1m===============LIST-OF-DOCKER-IMAGES===============\n\033[0m"
+                 sh 'docker images'
+              echo "\033[31m\033[ ================Logging-in-to-Amazon-Container-Registry=========================\n\033[0m"
+              echo "\033[31m\033[1m=====================================REPO=checkout-service=======================================\n\033[0m"
+              
+                sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 410012130044.dkr.ecr.us-east-1.amazonaws.com'
+                
+                echo "\033[31m\033[1m===============Tagging-Docker-Image===============\n\033[0m"
+              
+                echo "\033[31m\033[1m=========================Version-name=checkout-service:${params.Version_Name}===================================\n\033[0m"
+                sh "docker tag adeshgowda/checkoutservice:${BUILD_NUMBER} 410012130044.dkr.ecr.us-east-1.amazonaws.com/checkout-service:${params.Version_Name}"
+                
+            }
+        }
+        stage('Push-Image-To-Ecr') {
+            steps {
+                echo "\033[35m\033[1m===============Pushing Docker Image checkout-service:${params.Version_Name}===============\n\033[0m"
+                sh "docker push 410012130044.dkr.ecr.us-east-1.amazonaws.com/checkout-service:${params.Version_Name}"
+                echo '===============scanned==============='
+            }
+        }
+    }
+    
+    
+}
 
