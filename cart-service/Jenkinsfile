@@ -22,10 +22,23 @@ pipeline {
     
         }
     
-        stage('static-code-analysis') {
+       stage('static-code-analysis') {
+            environment {
+                SCANNER_HOME = tool 'sonar-cloud'
+            }
             steps {
-                echo '==================scanning code =================='
-                echo '===============scanned============'
+                echo "${BOLD}============================STARTING STATIC-CODE-ANALYSIS==================${NORMAL}"
+                script {
+                    withSonarQubeEnv(credentialsId: 'sonar-cloud', installationName: 'sonar-cloud') {
+                      sh """
+                      
+                         ${SCANNER_HOME}/bin/sonar-scanner  -X -Dsonar.organization=adeshgowda24 \
+                            -Dsonar.projectKey=adeshgowda24_app \
+                            -Dsonar.sources=/var/lib/jenkins/workspace/app-releases/cart-service/src/cartservice/src/
+                         """
+                    }
+                }
+                echo "${BOLD}===============SUCCESSFULLY COMPLETED STATIC CODE-ANALYSIS============${NORMAL}"
             }
         }
         stage('Quality-Gate-check') {
