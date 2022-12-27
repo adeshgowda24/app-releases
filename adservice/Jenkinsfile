@@ -22,6 +22,11 @@ pipeline {
             }
     
         }
+        stage('Build'){
+            steps{
+                sh './gradlew build'
+            }
+        }
     
         stage('static-code-analysis') {
             environment {
